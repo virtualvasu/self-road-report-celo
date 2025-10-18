@@ -40,7 +40,21 @@ export default function SuccessSummaryStep({ wizardData, onRestart, onBackToHome
       </div>
 
       {/* Process Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="bg-white border border-purple-200 rounded-lg p-4">
+          <div className="flex items-center space-x-3 mb-2">
+            <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+              <Shield className="w-4 h-4 text-purple-600" />
+            </div>
+            <span className="font-semibold text-gray-900">Identity Verified</span>
+          </div>
+          <p className="text-sm text-gray-600">
+            {wizardData.isIdentityVerified 
+              ? "Verified with Self Protocol" 
+              : "Submitted without verification"}
+          </p>
+        </div>
+
         <div className="bg-white border border-green-200 rounded-lg p-4">
           <div className="flex items-center space-x-3 mb-2">
             <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
@@ -100,6 +114,16 @@ export default function SuccessSummaryStep({ wizardData, onRestart, onBackToHome
               <div>
                 <span className="font-medium text-gray-700">Description</span>
                 <p className="text-gray-900 text-sm">{incidentData.description}</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start space-x-3">
+              <Shield className="w-5 h-5 text-gray-500 mt-0.5" />
+              <div>
+                <span className="font-medium text-gray-700">Identity Status</span>
+                <p className={`text-sm font-medium ${wizardData.isIdentityVerified ? 'text-green-600' : 'text-amber-600'}`}>
+                  {wizardData.isIdentityVerified ? 'Verified with Self Protocol' : 'Not verified'}
+                </p>
               </div>
             </div>
             

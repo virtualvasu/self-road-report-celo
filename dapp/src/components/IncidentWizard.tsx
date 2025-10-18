@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ChevronRight, CheckCircle, ArrowLeft } from 'lucide-react';
 import { ethers } from 'ethers';
 import InitialSetupStep from './steps/InitialSetupStep';
+import SelfProtocolVerification from './SelfProtocolVerification';
 import IncidentFormStep from './steps/IncidentFormStep';
 import PDFGenerationStep from './steps/PDFGenerationStep';
 import StorageUploadStep from './steps/StorageUploadStep';
@@ -14,6 +15,7 @@ export interface WizardData {
   walletAddress: string;
   contract: ethers.Contract | null;
   storachaCredentials: StorachaCredentials | null;
+  isIdentityVerified: boolean;
   incidentData: IncidentData;
   pdfBytes: Uint8Array | null;
   storachaCID: string;
@@ -22,17 +24,19 @@ export interface WizardData {
 
 const STEPS = [
   { id: 1, title: 'Setup Services', description: 'Connect wallet and storage' },
-  { id: 2, title: 'Incident Details', description: 'Report incident information' },
-  { id: 3, title: 'Generate Report', description: 'Create PDF document' },
-  { id: 4, title: 'Upload to Storage', description: 'Store on IPFS network' },
-  { id: 5, title: 'Submit to Contract', description: 'Record on blockchain' },
-  { id: 6, title: 'Complete', description: 'View summary' }
+  { id: 2, title: 'Identity Verification', description: 'Verify with Self Protocol' },
+  { id: 3, title: 'Incident Details', description: 'Report incident information' },
+  { id: 4, title: 'Generate Report', description: 'Create PDF document' },
+  { id: 5, title: 'Upload to Storage', description: 'Store on IPFS network' },
+  { id: 6, title: 'Submit to Contract', description: 'Record on blockchain' },
+  { id: 7, title: 'Complete', description: 'View summary' }
 ];
 
 const createInitialWizardData = (): WizardData => ({
   walletAddress: '',
   contract: null,
   storachaCredentials: null,
+  isIdentityVerified: false,
   incidentData: {
     location: '',
     description: '',
@@ -88,6 +92,17 @@ export default function IncidentWizard({ onBackToHome }: { onBackToHome?: () => 
         );
       case 2:
         return (
+          <SelfProtocolVerification
+            userAddress={wizardData.walletAddress}
+            onVerificationComplete={(verified: boolean) => {
+              updateWizardData({ isIdentityVerified: verified });
+              nextStep();
+            }}
+            onBack={previousStep}
+          />
+        );
+      case 3:
+        return (
           <IncidentFormStep
             data={wizardData.incidentData}
             onNext={(data: IncidentData) => {
@@ -96,7 +111,7 @@ export default function IncidentWizard({ onBackToHome }: { onBackToHome?: () => 
             }}
           />
         );
-      case 3:
+      case 4:
         return (
           <PDFGenerationStep
             incidentData={wizardData.incidentData}
@@ -107,7 +122,7 @@ export default function IncidentWizard({ onBackToHome }: { onBackToHome?: () => 
             onBack={previousStep}
           />
         );
-      case 4:
+      case 5:
         return (
           <StorageUploadStep
             pdfBytes={wizardData.pdfBytes!}
@@ -119,7 +134,7 @@ export default function IncidentWizard({ onBackToHome }: { onBackToHome?: () => 
             onBack={previousStep}
           />
         );
-      case 5:
+      case 6:
         return (
           <ContractSubmissionStep
             pdfCID={`https://w3s.link/ipfs/${wizardData.storachaCID}`}
@@ -132,7 +147,7 @@ export default function IncidentWizard({ onBackToHome }: { onBackToHome?: () => 
             onBack={previousStep}
           />
         );
-      case 6:
+      case 7:
         return (
           <SuccessSummaryStep
             wizardData={wizardData}
