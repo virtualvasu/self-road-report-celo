@@ -1,25 +1,98 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+// @ts-ignore
 import {
   SelfQRcodeWrapper,
   SelfAppBuilder,
-  type SelfApp,
   countries, 
   getUniversalLink,
 } from "@selfxyz/qrcode";
-import { ArrowLeft, Shield, CheckCircle, AlertTriangle, Copy, ExternalLink } from 'lucide-react';
+import { ethers } from "ethers";
+import { ArrowLeft, Shield, CheckCircle, AlertTriangle, Copy, ExternalLink, Loader2 } from 'lucide-react';
+
+// Type definitions for Self Protocol
+type SelfApp = any;
 
 interface SelfProtocolVerificationProps {
   onVerificationComplete: (verified: boolean, userAddress?: string) => void;
   onBack?: () => void;
   userAddress?: string;
+  contract?: ethers.Contract | null;
 }
+
+// ProofOfHuman contract details
+const PROOF_OF_HUMAN_ADDRESS = "0xa46fbeC38d888c37b4310a145745CF947d83a0eB";
+const PROOF_OF_HUMAN_ABI = [
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "isUserVerified",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "verifiedUsers",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "userIdentifier",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minimumAge",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "issueTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "expirationTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "ofacMatch",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "excludedCountries",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+];
 
 export default function SelfProtocolVerification({ 
   onVerificationComplete, 
   onBack, 
-  userAddress 
+  userAddress
 }: SelfProtocolVerificationProps) {
   const [linkCopied, setLinkCopied] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -28,6 +101,9 @@ export default function SelfProtocolVerification({
   const [universalLink, setUniversalLink] = useState("");
   const [isVerified, setIsVerified] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [checkingContract, setCheckingContract] = useState(true);
+  const [showQRCode, setShowQRCode] = useState(false);
+  const [proofOfHumanContract, setProofOfHumanContract] = useState<ethers.Contract | null>(null);
   
   // Use the provided userAddress or fallback to a default
   const userId = userAddress || '0x22861655b864Bdb2675F56CDa9D35EE2a2d6bF3c';
@@ -35,8 +111,71 @@ export default function SelfProtocolVerification({
   // Use useMemo to cache the array to avoid creating a new array on each render
   const excludedCountries = useMemo(() => [countries.UNITED_STATES], []);
 
-  // Use useEffect to ensure code only executes on the client side
+  // Initialize ProofOfHuman contract
   useEffect(() => {
+    const initializeContract = async () => {
+      if (!window.ethereum || !userAddress) {
+        setCheckingContract(false);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const browserProvider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await browserProvider.getSigner();
+        const pohContract = new ethers.Contract(PROOF_OF_HUMAN_ADDRESS, PROOF_OF_HUMAN_ABI, signer);
+        setProofOfHumanContract(pohContract);
+      } catch (error) {
+        console.error("Failed to initialize ProofOfHuman contract:", error);
+      }
+    };
+
+    initializeContract();
+  }, [userAddress]);
+
+  // Check if user is already verified on the contract
+  useEffect(() => {
+    const checkVerificationStatus = async () => {
+      if (!proofOfHumanContract || !userAddress) {
+        setCheckingContract(false);
+        return;
+      }
+
+      try {
+        setCheckingContract(true);
+        displayToast("Checking your verification status...");
+        
+        const isVerifiedOnChain = await proofOfHumanContract.isUserVerified(userAddress);
+        
+        if (isVerifiedOnChain) {
+          // User is already verified, proceed directly
+          setIsVerified(true);
+          displayToast("You are already verified! Proceeding...");
+          setTimeout(() => {
+            onVerificationComplete(true, userAddress);
+          }, 1500);
+        } else {
+          // User is not verified, show QR code for verification
+          setShowQRCode(true);
+          initializeSelfApp();
+        }
+      } catch (error) {
+        console.error("Error checking verification status:", error);
+        displayToast("Error checking verification status. Showing QR code...");
+        setShowQRCode(true);
+        initializeSelfApp();
+      } finally {
+        setCheckingContract(false);
+      }
+    };
+
+    if (proofOfHumanContract) {
+      checkVerificationStatus();
+    }
+  }, [proofOfHumanContract, userAddress]);
+
+  // Initialize Self app for QR code generation
+  const initializeSelfApp = () => {
     try {
       setIsLoading(true);
       const app = new SelfAppBuilder({
@@ -74,7 +213,7 @@ export default function SelfProtocolVerification({
       displayToast("Failed to initialize verification system");
       setIsLoading(false);
     }
-  }, [excludedCountries, userId]);
+  };
 
   const displayToast = (message: string) => {
     setToastMessage(message);
@@ -105,12 +244,79 @@ export default function SelfProtocolVerification({
     displayToast("Opening Self App...");
   };
 
-  const handleSuccessfulVerification = () => {
+  const handleSuccessfulVerification = async () => {
     setIsVerified(true);
-    displayToast("Verification successful! You can now proceed.");
-    setTimeout(() => {
-      onVerificationComplete(true, userId);
-    }, 1500);
+    setShowQRCode(false); // Hide QR code immediately after success
+    displayToast("Verification successful! Checking contract status...");
+    
+    // Wait a bit for the blockchain transaction to be mined
+    setTimeout(async () => {
+      await recheckContractVerification();
+    }, 3000);
+  };
+
+  const recheckContractVerification = async () => {
+    if (!proofOfHumanContract || !userAddress) {
+      displayToast("Verification completed! You can now proceed.");
+      setTimeout(() => {
+        onVerificationComplete(true, userAddress);
+      }, 1500);
+      return;
+    }
+
+    try {
+      displayToast("Confirming verification on blockchain...");
+      
+      // Check again if user is verified on contract
+      const isVerifiedOnChain = await proofOfHumanContract.isUserVerified(userAddress);
+      
+      if (isVerifiedOnChain) {
+        displayToast("Verification confirmed on blockchain! Proceeding...");
+        setTimeout(() => {
+          onVerificationComplete(true, userAddress);
+        }, 1500);
+      } else {
+        // If not immediately verified, keep checking for a bit
+        let attempts = 0;
+        const maxAttempts = 10;
+        
+        const checkInterval = setInterval(async () => {
+          attempts++;
+          
+          try {
+            const isVerified = await proofOfHumanContract.isUserVerified(userAddress);
+            if (isVerified) {
+              clearInterval(checkInterval);
+              displayToast("Verification confirmed! Proceeding...");
+              setTimeout(() => {
+                onVerificationComplete(true, userAddress);
+              }, 1500);
+            } else if (attempts >= maxAttempts) {
+              clearInterval(checkInterval);
+              displayToast("Verification completed! You can now proceed.");
+              setTimeout(() => {
+                onVerificationComplete(true, userAddress);
+              }, 1500);
+            }
+          } catch (error) {
+            console.error("Error checking verification:", error);
+            if (attempts >= maxAttempts) {
+              clearInterval(checkInterval);
+              displayToast("Verification completed! You can now proceed.");
+              setTimeout(() => {
+                onVerificationComplete(true, userAddress);
+              }, 1500);
+            }
+          }
+        }, 2000);
+      }
+    } catch (error) {
+      console.error("Error rechecking verification:", error);
+      displayToast("Verification completed! You can now proceed.");
+      setTimeout(() => {
+        onVerificationComplete(true, userAddress);
+      }, 1500);
+    }
   };
 
   const handleVerificationError = () => {
@@ -122,6 +328,24 @@ export default function SelfProtocolVerification({
     onVerificationComplete(false);
   };
 
+  // Show loading state while checking contract
+  if (checkingContract) {
+    return (
+      <div className="p-8">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Checking Verification Status</h2>
+          <p className="text-gray-600">
+            Please wait while we check if you're already verified...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show success state for verified users (either pre-verified or just verified)
   if (isVerified) {
     return (
       <div className="p-8">
@@ -129,9 +353,13 @@ export default function SelfProtocolVerification({
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="w-8 h-8 text-green-600" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Identity Verified Successfully!</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            {showQRCode ? "Verification Successful!" : "Already Verified!"}
+          </h2>
           <p className="text-gray-600 mb-6">
-            Your identity has been verified using Self Protocol. You can now proceed with the incident report.
+            {showQRCode 
+              ? "Your identity has been verified using Self Protocol. Processing..." 
+              : "Your identity is already verified with Self Protocol. You can proceed with the incident report."}
           </p>
           
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
@@ -140,6 +368,30 @@ export default function SelfProtocolVerification({
               <span className="text-green-800 font-medium">Verified User</span>
             </div>
           </div>
+
+          {showQRCode && (
+            <div className="flex items-center justify-center space-x-2">
+              <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+              <span className="text-sm text-gray-600">Confirming verification on blockchain...</span>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Show QR code verification flow
+  if (!showQRCode) {
+    return (
+      <div className="p-8">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Initializing Verification</h2>
+          <p className="text-gray-600">
+            Setting up your verification process...
+          </p>
         </div>
       </div>
     );
@@ -152,9 +404,9 @@ export default function SelfProtocolVerification({
         <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <Shield className="w-8 h-8 text-purple-600" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Identity Verification</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Identity Verification Required</h2>
         <p className="text-gray-600">
-          Verify your identity using Self Protocol to ensure secure and authentic incident reporting
+          Complete your identity verification to proceed with incident reporting
         </p>
       </div>
 
@@ -190,11 +442,19 @@ export default function SelfProtocolVerification({
             <div className="flex justify-center mb-6">
               {selfApp ? (
                 <div className="bg-white p-4 rounded-lg border-2 border-gray-200">
-                  <SelfQRcodeWrapper
-                    selfApp={selfApp}
-                    onSuccess={handleSuccessfulVerification}
-                    onError={handleVerificationError}
-                  />
+                  <div className="relative">
+                    <React.Suspense fallback={
+                      <div className="w-[256px] h-[256px] bg-gray-200 animate-pulse flex items-center justify-center rounded-lg">
+                        <p className="text-gray-500 text-sm">Loading QR Code...</p>
+                      </div>
+                    }>
+                      <SelfQRcodeWrapper
+                        selfApp={selfApp}
+                        onSuccess={handleSuccessfulVerification}
+                        onError={handleVerificationError}
+                      />
+                    </React.Suspense>
+                  </div>
                 </div>
               ) : (
                 <div className="w-[256px] h-[256px] bg-gray-200 animate-pulse flex items-center justify-center rounded-lg">
@@ -259,6 +519,7 @@ export default function SelfProtocolVerification({
               <li>• Ensures you're not in restricted countries</li>
               <li>• Uses zero-knowledge proofs to protect your privacy</li>
               <li>• Creates cryptographic proof of your identity without revealing personal information</li>
+              <li>• One-time verification that persists for future reports</li>
             </ul>
           </div>
         </div>

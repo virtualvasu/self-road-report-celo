@@ -94,6 +94,7 @@ export default function IncidentWizard({ onBackToHome }: { onBackToHome?: () => 
         return (
           <SelfProtocolVerification
             userAddress={wizardData.walletAddress}
+            contract={wizardData.contract}
             onVerificationComplete={(verified: boolean) => {
               updateWizardData({ isIdentityVerified: verified });
               nextStep();
