@@ -12,7 +12,7 @@ export default function IncidentFormStep({ data, onNext }: IncidentFormStepProps
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
 
-  const handleInputChange = (field: keyof IncidentData, value: string | boolean | File | null) => {
+  const handleInputChange = (field: keyof IncidentData, value: string | 'yes' | 'no' | 'unknown' | File | null) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
@@ -316,21 +316,21 @@ export default function IncidentFormStep({ data, onNext }: IncidentFormStepProps
             <Users className="w-4 h-4 mr-2 text-gray-500" />
             Elderly Person Involved?
           </label>
-          <div className="flex space-x-6">
+          <div className="flex flex-wrap gap-4">
             <label className="flex items-center space-x-3 cursor-pointer group">
               <div className="relative">
                 <input
                   type="radio"
-                  checked={formData.isElderlyInvolved}
-                  onChange={() => handleInputChange('isElderlyInvolved', true)}
+                  checked={formData.isElderlyInvolved === 'yes'}
+                  onChange={() => handleInputChange('isElderlyInvolved', 'yes')}
                   className="sr-only"
                 />
                 <div className={`w-5 h-5 rounded-full border-2 transition-all duration-200 ${
-                  formData.isElderlyInvolved 
+                  formData.isElderlyInvolved === 'yes'
                     ? 'bg-blue-600 border-blue-600' 
                     : 'border-gray-300 group-hover:border-gray-400'
                 }`}>
-                  {formData.isElderlyInvolved && (
+                  {formData.isElderlyInvolved === 'yes' && (
                     <div className="w-2 h-2 bg-white rounded-full absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
                   )}
                 </div>
@@ -341,21 +341,41 @@ export default function IncidentFormStep({ data, onNext }: IncidentFormStepProps
               <div className="relative">
                 <input
                   type="radio"
-                  checked={!formData.isElderlyInvolved}
-                  onChange={() => handleInputChange('isElderlyInvolved', false)}
+                  checked={formData.isElderlyInvolved === 'no'}
+                  onChange={() => handleInputChange('isElderlyInvolved', 'no')}
                   className="sr-only"
                 />
                 <div className={`w-5 h-5 rounded-full border-2 transition-all duration-200 ${
-                  !formData.isElderlyInvolved 
+                  formData.isElderlyInvolved === 'no'
                     ? 'bg-blue-600 border-blue-600' 
                     : 'border-gray-300 group-hover:border-gray-400'
                 }`}>
-                  {!formData.isElderlyInvolved && (
+                  {formData.isElderlyInvolved === 'no' && (
                     <div className="w-2 h-2 bg-white rounded-full absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
                   )}
                 </div>
               </div>
               <span className="text-gray-700 font-medium">No</span>
+            </label>
+            <label className="flex items-center space-x-3 cursor-pointer group">
+              <div className="relative">
+                <input
+                  type="radio"
+                  checked={formData.isElderlyInvolved === 'unknown'}
+                  onChange={() => handleInputChange('isElderlyInvolved', 'unknown')}
+                  className="sr-only"
+                />
+                <div className={`w-5 h-5 rounded-full border-2 transition-all duration-200 ${
+                  formData.isElderlyInvolved === 'unknown'
+                    ? 'bg-blue-600 border-blue-600' 
+                    : 'border-gray-300 group-hover:border-gray-400'
+                }`}>
+                  {formData.isElderlyInvolved === 'unknown' && (
+                    <div className="w-2 h-2 bg-white rounded-full absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
+                  )}
+                </div>
+              </div>
+              <span className="text-gray-700 font-medium">Don't Know</span>
             </label>
           </div>
         </div>

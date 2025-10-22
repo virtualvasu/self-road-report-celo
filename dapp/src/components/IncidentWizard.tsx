@@ -40,7 +40,7 @@ const createInitialWizardData = (): WizardData => ({
   incidentData: {
     location: '',
     description: '',
-    isElderlyInvolved: false,
+    isElderlyInvolved: 'no',
     image: null
   },
   pdfBytes: null,

@@ -3,7 +3,7 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 export interface IncidentData {
   location: string;
   description: string;
-  isElderlyInvolved: boolean;
+  isElderlyInvolved: 'yes' | 'no' | 'unknown';
   image?: File | null;
 }
 
@@ -137,13 +137,31 @@ export async function generateIncidentPDF(data: IncidentData): Promise<Uint8Arra
     color: darkGray,
   });
 
-  const elderlyStatus = isElderlyInvolved ? 'YES' : 'NO';
-  const elderlyColor = isElderlyInvolved ? rgb(0.8, 0.2, 0.2) : rgb(0.2, 0.6, 0.2);
+  let elderlyStatus: string;
+  let elderlyColor;
+  
+  switch (isElderlyInvolved) {
+    case 'yes':
+      elderlyStatus = 'YES';
+      elderlyColor = rgb(0.8, 0.2, 0.2); // Red
+      break;
+    case 'no':
+      elderlyStatus = 'NO';
+      elderlyColor = rgb(0.2, 0.6, 0.2); // Green
+      break;
+    case 'unknown':
+      elderlyStatus = 'UNKNOWN';
+      elderlyColor = rgb(0.6, 0.6, 0.2); // Yellow/Orange
+      break;
+    default:
+      elderlyStatus = 'UNKNOWN';
+      elderlyColor = rgb(0.6, 0.6, 0.2);
+  }
 
   page1.drawRectangle({
     x: 50,
     y: currentY - 25,
-    width: 100,
+    width: 120,
     height: 20,
     color: elderlyColor,
   });
