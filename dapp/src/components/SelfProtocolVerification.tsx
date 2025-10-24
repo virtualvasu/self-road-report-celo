@@ -21,8 +21,13 @@ interface SelfProtocolVerificationProps {
   contract?: ethers.Contract | null;
 }
 
-// ProofOfHuman contract details
+// ProofOfHuman contract details - deployed on Celo Sepolia testnet
+// Chain ID: 11142220
+// Contract Address: 0xa46fbeC38d888c37b4310a145745CF947d83a0eB
 const PROOF_OF_HUMAN_ADDRESS = "0xa46fbeC38d888c37b4310a145745CF947d83a0eB";
+const CELO_SEPOLIA_CHAIN_ID = 11142220;
+const CELO_SEPOLIA_RPC_URL = "https://forno.celo-sepolia.celo-testnet.org";
+
 const PROOF_OF_HUMAN_ABI = [
   {
     "inputs": [
@@ -54,34 +59,67 @@ const PROOF_OF_HUMAN_ABI = [
     "name": "verifiedUsers",
     "outputs": [
       {
+        "internalType": "bytes32",
+        "name": "attestationId",
+        "type": "bytes32"
+      },
+      {
         "internalType": "uint256",
         "name": "userIdentifier",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "minimumAge",
+        "name": "nullifier",
         "type": "uint256"
       },
       {
-        "internalType": "uint256",
-        "name": "issueTime",
-        "type": "uint256"
+        "internalType": "string",
+        "name": "issuingState",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "idNumber",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "nationality",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "dateOfBirth",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "gender",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "expiryDate",
+        "type": "string"
       },
       {
         "internalType": "uint256",
-        "name": "expirationTime",
+        "name": "olderThan",
         "type": "uint256"
-      },
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "verificationSuccessful",
+    "outputs": [
       {
         "internalType": "bool",
-        "name": "ofacMatch",
+        "name": "",
         "type": "bool"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "excludedCountries",
-        "type": "uint256[]"
       }
     ],
     "stateMutability": "view",
@@ -104,12 +142,52 @@ export default function SelfProtocolVerification({
   const [checkingContract, setCheckingContract] = useState(true);
   const [showQRCode, setShowQRCode] = useState(false);
   const [proofOfHumanContract, setProofOfHumanContract] = useState<ethers.Contract | null>(null);
+  const [wrongNetwork, setWrongNetwork] = useState(false);
   
   // Use the provided userAddress or fallback to a default
   const userId = userAddress || '0x22861655b864Bdb2675F56CDa9D35EE2a2d6bF3c';
   
   // Use useMemo to cache the array to avoid creating a new array on each render
   const excludedCountries = useMemo(() => [countries.UNITED_STATES], []);
+
+  // Function to switch to Celo Sepolia network
+  const switchToCeloSepolia = async () => {
+    if (!window.ethereum) return;
+
+    try {
+      // Try to switch to the network
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: `0x${CELO_SEPOLIA_CHAIN_ID.toString(16)}` }],
+      });
+    } catch (switchError: any) {
+      // If the network doesn't exist, add it
+      if (switchError.code === 4902) {
+        try {
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [{
+              chainId: `0x${CELO_SEPOLIA_CHAIN_ID.toString(16)}`,
+              chainName: 'Celo Sepolia Testnet',
+              nativeCurrency: {
+                name: 'CELO',
+                symbol: 'CELO',
+                decimals: 18,
+              },
+              rpcUrls: [CELO_SEPOLIA_RPC_URL],
+              blockExplorerUrls: ['https://celo-sepolia.blockscout.com/'],
+            }],
+          });
+        } catch (addError) {
+          console.error('Failed to add Celo Sepolia network:', addError);
+          displayToast('Failed to add Celo Sepolia network');
+        }
+      } else {
+        console.error('Failed to switch network:', switchError);
+        displayToast('Failed to switch to Celo Sepolia network');
+      }
+    }
+  };
 
   // Initialize ProofOfHuman contract
   useEffect(() => {
@@ -122,6 +200,20 @@ export default function SelfProtocolVerification({
 
       try {
         const browserProvider = new ethers.BrowserProvider(window.ethereum);
+        
+        // Check if we're on the correct network (Celo Sepolia testnet)
+        const network = await browserProvider.getNetwork();
+        console.log("Current network:", network.chainId.toString());
+        
+        if (network.chainId !== BigInt(CELO_SEPOLIA_CHAIN_ID)) {
+          console.warn("Not on Celo Sepolia testnet. Expected chain ID: 11142220, current:", network.chainId.toString());
+          setWrongNetwork(true);
+          displayToast("Please switch to Celo Sepolia testnet to use this feature");
+          return;
+        }
+        
+        setWrongNetwork(false);
+        
         const signer = await browserProvider.getSigner();
         const pohContract = new ethers.Contract(PROOF_OF_HUMAN_ADDRESS, PROOF_OF_HUMAN_ABI, signer);
         setProofOfHumanContract(pohContract);
@@ -145,7 +237,23 @@ export default function SelfProtocolVerification({
         setCheckingContract(true);
         displayToast("Checking your verification status...");
         
+        console.log("Checking verification for address:", userAddress);
+        console.log("Contract instance:", proofOfHumanContract);
+        console.log("Contract address:", proofOfHumanContract.target);
+        
+        // First check if the contract is deployed and accessible
+        const contractCode = await proofOfHumanContract.runner?.provider?.getCode(proofOfHumanContract.target);
+        console.log("Contract code length:", contractCode?.length);
+        
+        if (!contractCode || contractCode === "0x") {
+          console.error("Contract not deployed at the specified address");
+          displayToast("Contract not found. Please ensure you're on Celo Sepolia testnet.");
+          setWrongNetwork(true);
+          return;
+        }
+        
         const isVerifiedOnChain = await proofOfHumanContract.isUserVerified(userAddress);
+        console.log("Verification result:", isVerifiedOnChain);
         
         if (isVerifiedOnChain) {
           // User is already verified, proceed directly
@@ -159,8 +267,16 @@ export default function SelfProtocolVerification({
           setShowQRCode(true);
           initializeSelfApp();
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error checking verification status:", error);
+        
+        // Provide more detailed error information
+        if (error?.code === 'BAD_DATA') {
+          console.error("Contract method returned invalid data - possible ABI mismatch or contract not deployed");
+        } else if (error?.code === 'CALL_EXCEPTION') {
+          console.error("Contract call failed - method might not exist or contract might not be deployed");
+        }
+        
         displayToast("Error checking verification status. Showing QR code...");
         setShowQRCode(true);
         initializeSelfApp();
@@ -327,6 +443,53 @@ export default function SelfProtocolVerification({
     // For testing purposes - in production you might want to remove this
     onVerificationComplete(false);
   };
+
+  // Show network switch prompt if on wrong network
+  if (wrongNetwork) {
+    return (
+      <div className="p-8">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="w-8 h-8 text-orange-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Wrong Network</h2>
+          <p className="text-gray-600 mb-6">
+            This application requires Celo Sepolia testnet to verify your identity. Please switch your wallet to the correct network.
+          </p>
+          
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+            <div className="flex items-center justify-center space-x-3">
+              <AlertTriangle className="w-5 h-5 text-orange-600" />
+              <span className="text-orange-800 font-medium">Network: Celo Sepolia Testnet</span>
+            </div>
+            <div className="mt-2 text-sm text-orange-700">
+              <p>Chain ID: {CELO_SEPOLIA_CHAIN_ID}</p>
+              <p>RPC URL: {CELO_SEPOLIA_RPC_URL}</p>
+            </div>
+          </div>
+
+          <button
+            onClick={switchToCeloSepolia}
+            className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg font-medium transition-colors mb-4"
+          >
+            Switch to Celo Sepolia
+          </button>
+
+          {onBack && (
+            <div className="mt-4">
+              <button
+                onClick={onBack}
+                className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors font-medium mx-auto"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                <span>Back</span>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   // Show loading state while checking contract
   if (checkingContract) {
@@ -534,6 +697,7 @@ export default function SelfProtocolVerification({
               <p className="font-medium mb-1">Development Mode</p>
               <p className="text-amber-700 mb-3">
                 For testing purposes, you can skip verification. In production, this option will not be available.
+                Note: Contract is deployed on Celo Sepolia testnet (Chain ID: {CELO_SEPOLIA_CHAIN_ID}).
               </p>
               <button
                 onClick={handleSkipVerification}

@@ -10,7 +10,9 @@ import {
   Shield, 
   AlertTriangle,
   RefreshCw,
-  ExternalLink
+  ExternalLink,
+  DollarSign,
+  Plus
 } from 'lucide-react';
 import { INCIDENT_MANAGER_ADDRESS, INCIDENT_MANAGER_ABI, type IncidentData } from '../lib/contract';
 
