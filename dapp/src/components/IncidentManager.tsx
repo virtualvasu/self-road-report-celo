@@ -2,8 +2,9 @@ import { useState } from 'react';
 import LandingPage from './LandingPage';
 import IncidentWizard from './IncidentWizard';
 import IncidentDashboard from './IncidentDashboard';
+import RewardsTracker from './RewardsTracker';
 
-type AppMode = 'landing' | 'report' | 'dashboard';
+type AppMode = 'landing' | 'report' | 'dashboard' | 'rewards';
 
 export default function IncidentManager() {
   const [currentMode, setCurrentMode] = useState<AppMode>('landing');
@@ -19,6 +20,7 @@ export default function IncidentManager() {
           <LandingPage
             onReportIncident={() => handleModeChange('report')}
             onViewDashboard={() => handleModeChange('dashboard')}
+            onViewRewards={() => handleModeChange('rewards')}
           />
         );
       case 'dashboard':
@@ -29,6 +31,12 @@ export default function IncidentManager() {
         );
       case 'report':
         return <IncidentWizard onBackToHome={() => handleModeChange('landing')} />;
+      case 'rewards':
+        return (
+          <RewardsTracker
+            onBack={() => handleModeChange('landing')}
+          />
+        );
       default:
         return null;
     }

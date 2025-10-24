@@ -1,6 +1,8 @@
 // IncidentManager Contract Configuration
 // This file contains the contract address and ABI for the IncidentManager contract
 
+import { ethers } from 'ethers';
+
 export const INCIDENT_MANAGER_ADDRESS = "0x34b6921bfe6c4933a1Af79b5f36A5b6e28B1a081";
 
 export const INCIDENT_MANAGER_ABI = [
@@ -326,4 +328,94 @@ export interface IncidentData {
     timestamp: string;
     verified: boolean;
     ipfsUrl: string;
+}
+
+// Utility functions for contract interactions
+export const connectWalletAndContract = async (): Promise<{
+    walletAddress: string;
+    contract: ethers.Contract;
+    provider: ethers.BrowserProvider;
+} | null> => {
+    if (!window.ethereum) {
+        throw new Error("Please install MetaMask to continue");
+    }
+
+    try {
+        const browserProvider = new ethers.BrowserProvider(window.ethereum);
+        const accounts = await browserProvider.send("eth_requestAccounts", []);
+        const signer = await browserProvider.getSigner();
+        const contractInstance = new ethers.Contract(INCIDENT_MANAGER_ADDRESS, INCIDENT_MANAGER_ABI, signer);
+        
+        return {
+            walletAddress: accounts[0],
+            contract: contractInstance,
+            provider: browserProvider
+        };
+    } catch (error) {
+        console.error('Wallet connection error:', error);
+        throw error;
+    }
+};
+
+export const getUserIncidents = async (
+    contract: ethers.Contract,
+    userAddress: string
+): Promise<Incident[]> => {
+    const lastIncidentId = await contract.getLastIncidentId();
+    const totalIncidents = Number(lastIncidentId);
+    
+    const userIncidents: Incident[] = [];
+    
+    for (let i = 1; i <= totalIncidents; i++) {
+        try {
+            const incident = await contract.getIncident(i);
+            const [id, description, reportedBy, timestamp, verified] = incident;
+            
+            if (reportedBy.toLowerCase() === userAddress.toLowerCase()) {
+                userIncidents.push({
+                    id: BigInt(id),
+                    description,
+                    reportedBy,
+                    timestamp: BigInt(timestamp),
+                    verified
+                });
+            }
+        } catch (error) {
+            console.error(`Error fetching incident ${i}:`, error);
+        }
+    }
+    
+    return userIncidents;
+};
+
+export const calculateUserRewards = async (
+    contract: ethers.Contract,
+    userIncidents: Incident[]
+): Promise<{
+    totalRewards: string;
+    verifiedCount: number;
+    pendingCount: number;
+    rewardAmount: string;
+}> => {
+    const rewardAmount = await contract.rewardAmount();
+    const rewardInCelo = ethers.formatEther(rewardAmount);
+    
+    const verifiedIncidents = userIncidents.filter(incident => incident.verified);
+    const pendingIncidents = userIncidents.filter(incident => !incident.verified);
+    
+    const totalRewards = (parseFloat(rewardInCelo) * verifiedIncidents.length).toFixed(4);
+    
+    return {
+        totalRewards,
+        verifiedCount: verifiedIncidents.length,
+        pendingCount: pendingIncidents.length,
+        rewardAmount: rewardInCelo
+    };
+};
+
+// Global window interface for MetaMask
+declare global {
+    interface Window {
+        ethereum?: any;
+    }
 }

@@ -1,11 +1,12 @@
-import { FileText, Shield, Database, Cloud, ArrowRight, BarChart3 } from 'lucide-react';
+import { FileText, Shield, Database, Cloud, ArrowRight, BarChart3, Award } from 'lucide-react';
 
 interface LandingPageProps {
   onReportIncident: () => void;
   onViewDashboard: () => void;
+  onViewRewards: () => void;
 }
 
-export default function LandingPage({ onReportIncident, onViewDashboard }: LandingPageProps) {
+export default function LandingPage({ onReportIncident, onViewDashboard, onViewRewards }: LandingPageProps) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -43,7 +44,7 @@ export default function LandingPage({ onReportIncident, onViewDashboard }: Landi
         </div>
 
         {/* Action Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {/* Report New Incident */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 hover:shadow-md transition-shadow">
             <div className="text-center">
@@ -121,6 +122,47 @@ export default function LandingPage({ onReportIncident, onViewDashboard }: Landi
                 className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-6 rounded-lg shadow-sm hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200 focus:ring-4 focus:ring-green-300 flex items-center justify-center space-x-2"
               >
                 <span>View Dashboard</span>
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* View My Rewards */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 hover:shadow-md transition-shadow">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Award className="w-8 h-8 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">My Rewards</h3>
+              <p className="text-gray-600 mb-6">
+                Connect your wallet to view your earnings from verified incident reports and track your rewards.
+              </p>
+
+              {/* Features */}
+              <div className="space-y-3 mb-8 text-left">
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  <span className="text-sm text-gray-700">Total CELO rewards earned</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  <span className="text-sm text-gray-700">Verified vs pending incidents</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  <span className="text-sm text-gray-700">Detailed earnings breakdown</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  <span className="text-sm text-gray-700">Real-time reward tracking</span>
+                </div>
+              </div>
+
+              <button
+                onClick={onViewRewards}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-lg shadow-sm hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200 focus:ring-4 focus:ring-blue-300 flex items-center justify-center space-x-2"
+              >
+                <span>View My Rewards</span>
                 <ArrowRight className="w-5 h-5" />
               </button>
             </div>
