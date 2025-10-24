@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import LandingPage from './LandingPage';
-import IncidentSearchPage from './IncidentSearchPage';
 import IncidentWizard from './IncidentWizard';
+import IncidentDashboard from './IncidentDashboard';
 
-type AppMode = 'landing' | 'search' | 'report';
+type AppMode = 'landing' | 'report' | 'dashboard';
 
 export default function IncidentManager() {
   const [currentMode, setCurrentMode] = useState<AppMode>('landing');
@@ -18,12 +18,12 @@ export default function IncidentManager() {
         return (
           <LandingPage
             onReportIncident={() => handleModeChange('report')}
-            onSearchIncident={() => handleModeChange('search')}
+            onViewDashboard={() => handleModeChange('dashboard')}
           />
         );
-      case 'search':
+      case 'dashboard':
         return (
-          <IncidentSearchPage
+          <IncidentDashboard
             onBack={() => handleModeChange('landing')}
           />
         );

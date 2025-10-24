@@ -1,11 +1,11 @@
-import { FileText, Search, Shield, Database, Cloud, ArrowRight } from 'lucide-react';
+import { FileText, Shield, Database, Cloud, ArrowRight, BarChart3 } from 'lucide-react';
 
 interface LandingPageProps {
   onReportIncident: () => void;
-  onSearchIncident: () => void;
+  onViewDashboard: () => void;
 }
 
-export default function LandingPage({ onReportIncident, onSearchIncident }: LandingPageProps) {
+export default function LandingPage({ onReportIncident, onViewDashboard }: LandingPageProps) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -85,42 +85,42 @@ export default function LandingPage({ onReportIncident, onSearchIncident }: Land
             </div>
           </div>
 
-          {/* Search Existing Incident */}
+          {/* View Dashboard */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 hover:shadow-md transition-shadow">
             <div className="text-center">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Search className="w-8 h-8 text-blue-600" />
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <BarChart3 className="w-8 h-8 text-green-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Search Incident</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Incident Dashboard</h3>
               <p className="text-gray-600 mb-6">
-                Look up details of a previously reported incident using its unique incident ID.
+                View the latest 10 incidents and search through all reported incidents with comprehensive details.
               </p>
 
               {/* Features */}
               <div className="space-y-3 mb-8 text-left">
                 <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                  <span className="text-sm text-gray-700">Search by incident ID number</span>
+                  <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                  <span className="text-sm text-gray-700">Latest 10 incidents overview</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                  <span className="text-sm text-gray-700">View original incident details</span>
+                  <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                  <span className="text-sm text-gray-700">Quick search by incident ID</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                  <span className="text-sm text-gray-700">Access stored PDF reports</span>
+                  <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                  <span className="text-sm text-gray-700">Verification status tracking</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                  <span className="text-sm text-gray-700">Verify blockchain timestamps</span>
+                  <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                  <span className="text-sm text-gray-700">Real-time blockchain updates</span>
                 </div>
               </div>
 
               <button
-                onClick={onSearchIncident}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-lg shadow-sm hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200 focus:ring-4 focus:ring-blue-300 flex items-center justify-center space-x-2"
+                onClick={onViewDashboard}
+                className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-6 rounded-lg shadow-sm hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200 focus:ring-4 focus:ring-green-300 flex items-center justify-center space-x-2"
               >
-                <span>Search Incident</span>
+                <span>View Dashboard</span>
                 <ArrowRight className="w-5 h-5" />
               </button>
             </div>
