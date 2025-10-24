@@ -3,6 +3,7 @@ import { Wallet, Cloud, ArrowRight, CheckCircle, AlertTriangle, Shield } from 'l
 import { ethers } from 'ethers';
 import StorachaConnection from '../StorachaConnection';
 import type { StorachaCredentials } from '../StorachaConnection';
+import { INCIDENT_MANAGER_ADDRESS, INCIDENT_MANAGER_ABI } from '../../lib/contract';
 
 declare global {
   interface Window {
@@ -13,136 +14,6 @@ declare global {
 interface InitialSetupStepProps {
   onNext: (setupData: { walletAddress: string; contract: ethers.Contract; storachaCredentials: StorachaCredentials }) => void;
 }
-
-const contractAddress = "0x2cEA78491DFb4eecB061FcB669d148977EB8a950";
-
-const abi: any[] = [
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "id",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "description",
-        "type": "string"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "reportedBy",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "timestamp",
-        "type": "uint256"
-      }
-    ],
-    "name": "IncidentReported",
-    "type": "event"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_id",
-        "type": "uint256"
-      }
-    ],
-    "name": "getIncident",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      },
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "incidentCounter",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "incidents",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "id",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "description",
-        "type": "string"
-      },
-      {
-        "internalType": "address",
-        "name": "reportedBy",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "timestamp",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "_description",
-        "type": "string"
-      }
-    ],
-    "name": "reportIncident",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  }
-];
 
 export default function InitialSetupStep({ onNext }: InitialSetupStepProps) {
   const [walletAddress, setWalletAddress] = useState<string>('');
@@ -164,7 +35,7 @@ export default function InitialSetupStep({ onNext }: InitialSetupStepProps) {
       const browserProvider = new ethers.BrowserProvider(window.ethereum);
       const accounts = await browserProvider.send("eth_requestAccounts", []);
       const signer = await browserProvider.getSigner();
-      const contractInstance = new ethers.Contract(contractAddress, abi, signer);
+      const contractInstance = new ethers.Contract(INCIDENT_MANAGER_ADDRESS, INCIDENT_MANAGER_ABI, signer);
       
       setContract(contractInstance);
       setWalletAddress(accounts[0]);

@@ -1,51 +1,13 @@
 import { useState } from 'react';
-import { Search, ArrowLeft, FileText, User, Clock, Hash, ExternalLink, AlertCircle, Loader } from 'lucide-react';
+import { Search, ArrowLeft, FileText, User, Clock, Hash, ExternalLink, AlertCircle, Loader, CheckCircle, XCircle } from 'lucide-react';
 import { ethers } from 'ethers';
+import { INCIDENT_MANAGER_ADDRESS, INCIDENT_MANAGER_ABI, type IncidentData } from '../lib/contract';
 
 declare global {
     interface Window {
         ethereum?: any;
     }
 }
-
-const abi: any[] = [
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "_id",
-                "type": "uint256"
-            }
-        ],
-        "name": "getIncident",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            },
-            {
-                "internalType": "string",
-                "name": "",
-                "type": "string"
-            },
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            },
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    }
-];
-
-const contractAddress = "0x2cEA78491DFb4eecB061FcB669d148977EB8a950";
 
 interface IncidentSearchPageProps {
   onBack: () => void;
@@ -54,7 +16,7 @@ interface IncidentSearchPageProps {
 export default function IncidentSearchPage({ onBack }: IncidentSearchPageProps) {
   const [incidentId, setIncidentId] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const [incidentData, setIncidentData] = useState<any>(null);
+  const [incidentData, setIncidentData] = useState<IncidentData | null>(null);
   const [error, setError] = useState('');
 
   const handleSearch = async () => {
@@ -74,7 +36,7 @@ export default function IncidentSearchPage({ onBack }: IncidentSearchPageProps) 
 
     try {
       const browserProvider = new ethers.BrowserProvider(window.ethereum);
-      const contract = new ethers.Contract(contractAddress, abi, browserProvider);
+      const contract = new ethers.Contract(INCIDENT_MANAGER_ADDRESS, INCIDENT_MANAGER_ABI, browserProvider);
       
       const data = await contract.getIncident(Number(incidentId));
       
@@ -83,11 +45,12 @@ export default function IncidentSearchPage({ onBack }: IncidentSearchPageProps) 
         return;
       }
 
-      const formattedData = {
+      const formattedData: IncidentData = {
         id: data[0].toString(),
         description: data[1],
         reportedBy: data[2],
         timestamp: new Date(Number(data[3]) * 1000).toLocaleString(),
+        verified: data[4], // New verification status field
         ipfsUrl: data[1] // The description field contains the IPFS URL
       };
 
@@ -252,8 +215,20 @@ export default function IncidentSearchPage({ onBack }: IncidentSearchPageProps) 
                 <div className="flex items-start space-x-3">
                   <FileText className="w-5 h-5 text-gray-500 mt-0.5" />
                   <div>
-                    <span className="font-medium text-gray-700">Report Status</span>
-                    <p className="text-green-600 font-semibold">Verified on Blockchain</p>
+                    <span className="font-medium text-gray-700">Verification Status</span>
+                    <div className="flex items-center space-x-2 mt-1">
+                      {incidentData.verified ? (
+                        <>
+                          <CheckCircle className="w-4 h-4 text-green-600" />
+                          <span className="text-green-600 font-semibold">Verified</span>
+                        </>
+                      ) : (
+                        <>
+                          <XCircle className="w-4 h-4 text-amber-600" />
+                          <span className="text-amber-600 font-semibold">Pending Verification</span>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -286,14 +261,36 @@ export default function IncidentSearchPage({ onBack }: IncidentSearchPageProps) 
             </div>
 
             {/* Additional Information */}
-            <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className={`mt-6 p-4 border rounded-lg ${
+              incidentData.verified 
+                ? 'bg-green-50 border-green-200' 
+                : 'bg-amber-50 border-amber-200'
+            }`}>
               <div className="flex items-start space-x-3">
-                <div className="w-5 h-5 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-white text-xs font-bold">✓</span>
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                  incidentData.verified 
+                    ? 'bg-green-600' 
+                    : 'bg-amber-600'
+                }`}>
+                  <span className="text-white text-xs font-bold">
+                    {incidentData.verified ? '✓' : '!'}
+                  </span>
                 </div>
-                <div className="text-sm text-green-800">
-                  <p className="font-medium">Verified Incident Report</p>
-                  <p>This incident has been permanently recorded on the blockchain and stored on IPFS, ensuring its authenticity and immutability.</p>
+                <div className={`text-sm ${
+                  incidentData.verified 
+                    ? 'text-green-800' 
+                    : 'text-amber-800'
+                }`}>
+                  <p className="font-medium">
+                    {incidentData.verified 
+                      ? 'Verified Incident Report' 
+                      : 'Pending Verification'}
+                  </p>
+                  <p>
+                    {incidentData.verified 
+                      ? 'This incident has been verified by the contract owner and permanently recorded on the blockchain with IPFS storage, ensuring its authenticity and immutability.'
+                      : 'This incident has been recorded on the blockchain and stored on IPFS, but is awaiting verification by the contract owner.'}
+                  </p>
                 </div>
               </div>
             </div>

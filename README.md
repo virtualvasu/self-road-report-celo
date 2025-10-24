@@ -116,7 +116,7 @@ VITE_SELF_ENDPOINT=https://staging-api.self.xyz
 ## Deployed Contracts (Celo Sepolia)
 
 - **ProofOfHuman**: `0xa46fbeC38d888c37b4310a145745CF947d83a0eB`
-- **IncidentManager**: `0x2cEA78491DFb4eecB061FcB669d148977EB8a950`
+- **IncidentManager**: `0x839b35480ddb545e550742e094c0fc0a73fd43ce`
 
 ## Key Benefits
 
