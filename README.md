@@ -1,144 +1,96 @@
-# Incident Management System
+<p align="center">
+	<img src="dapp/public/logo.png" alt="SafeRoads DAO Logo" width="90" height="90" />
+</p>
 
-A decentralized incident reporting platform with Self Protocol identity verification and blockchain-based record keeping.
+# SafeRoads DAO
 
-## Features
+## Table of Contents
 
-- **Self Protocol Identity Verification** - Zero-knowledge proof of identity
-- **Blockchain Timestamping** - Immutable incident records on Celo
-- **IPFS Storage** - Decentralized document storage via Storacha
-- **PDF Report Generation** - Professional incident documentation
-- **Smart Contract Integration** - Automated verification checks
+- [How Self Protocol is Used](#how-self-protocol-is-used)
+- [Problem](#problem)
+- [Solution](#solution)
+- [Deployment & Demo](#deployment--demo)
+- [AI-Powered Feature Development](#ai-powered-feature-development)
+- [Smart Contracts on Celo Sepolia](#smart-contracts-on-celo-sepolia)
+- [Getting Started](#getting-started)
 
-## Project Structure
+> Turning “why should I report?” into “heck yes, I’ll report!”
 
-```
-├── contracts/          # Smart contracts (Foundry)
-│   ├── src/
-│   │   ├── IncidentContract.sol    # Incident storage contract
-│   │   └── ProofOfHuman.sol        # Self Protocol verification
-│   └── script/         # Deployment scripts
-└── dapp/              # React frontend (Vite + TypeScript)
-    └── src/
-        ├── components/ # UI components
-        └── lib/       # PDF generation utilities
-```
+SafeRoads DAO is a decentralized platform built on the **Celo blockchain** that rewards citizens for reporting real road incidents — potholes, accidents, or other road hazards — and stores them **on-chain for transparency**.  
+Once verified, reporters earn **Celo tokens** for their contribution to safer cities.
 
-## Setup
 
-### Prerequisites
-- Node.js 18+
-- Foundry
-- MetaMask wallet
-- Storacha account
 
-### 1. Clone Repository
+## Problem
+
+In busy metro cities like **New Delhi**, road issues are everywhere — but no one reports them.  
+People don’t have time, there’s no incentive, and existing systems lack transparency.  
+As a result, governments don’t get reliable data, and citizens stop caring.
+
+---
+
+
+## Solution
+
+SafeRoads DAO makes civic participation **rewarding and verifiable**.
+
+- Citizens report road incidents through a simple **dApp** (location + image + description).  
+- Reports are recorded on the **Celo blockchain**, ensuring public visibility and immutability.  
+- Verified reports earn **Celo token rewards**.  
+- [Self Protocol](https://docs.self.xyz/) ensures only real humans can report, verified via Aadhaar.
+
+---
+
+
+
+## Deployment & Demo
+
+- **Deployment link of main dapp:**  
+	https://self-road-report-celo.vercel.app/
+
+- **Demo screencasts of the dapp:**  
+	https://drive.google.com/drive/folders/1dCfET3D1Tt42aQ7yfovlCXsd5ued5IUk?usp=drive_link
+
+----
+
+## How Self Protocol is Used
+
+In SafeRoads DAO, [Self Protocol](https://docs.self.xyz/) is integrated to ensure that only real, unique humans can submit road incident reports. When a user wants to report an incident, they must verify their identity using [Self Protocol](https://docs.self.xyz/), which leverages Aadhaar-based zero-knowledge proofs. This process confirms the user is a genuine individual without exposing any personal data. Only after successful verification can the user submit a report and become eligible for rewards, making the platform both secure and privacy-preserving.
+
+
+
+## NoahAI-Powered Feature Development
+
+To deliver a complete user experience, I am leveraging [Noah AI](https://trynoah.ai/) to rapidly develop and enhance features for SafeRoads DAO. One of the key additions is the **Incident Verification Portal**—a dedicated interface for verifying authorities to review incident reports and trigger rewards for reporters. This portal streamlines the verification process and ensures timely, transparent reward distribution.
+
+- **Noah AI demo link:**  
+	https://share.vidyard.com/watch/wUvHSew3pVXDFLG247Pzzq
+
+## Smart Contracts on Celo Sepolia
+
+SafeRoads DAO uses two main smart contracts, both deployed on the Celo Sepolia testnet:
+
+### 1. ProofOfHuman Contract
+- **Block Explorer:** [0xa46fbeC38d888c37b4310a145745CF947d83a0eB](https://celo-sepolia.blockscout.com/address/0xa46fbeC38d888c37b4310a145745CF947d83a0eB)
+- **Purpose:** Handles user verification via [Self Protocol](https://docs.self.xyz/). When a user completes Aadhaar-based verification in the Self mobile app, this contract records their verified status on-chain. It ensures only real, unique humans (not bots or duplicates) can report incidents and claim rewards. The contract stores cryptographic attestations and provides a public method to check if a user is verified.
+
+### 2. IncidentContract
+- **Block Explorer:** [0x34b6921bfe6c4933a1Af79b5f36A5b6e28B1a081](https://celo-sepolia.blockscout.com/address/0x34b6921bfe6c4933a1Af79b5f36A5b6e28B1a081)
+- **Purpose:** This is the main contract for the dApp. It manages the full lifecycle of incident reporting: accepting new reports, storing incident data, keeping a record of reporters, and distributing rewards to verified users. All actions are recorded on-chain for transparency and auditability.
+
+
+## Getting Started
+
 ```bash
-git clone <repository-url>
-cd self-road-report-celo
-```
+# Clone the repo
+git clone https://github.com/virtualvasu/self-road-report-celo.git
 
-### 2. Deploy Contracts
-```bash
-cd contracts
-npm install
-forge build
-./script/deploy-proof-of-human.sh
-./script/deploy-incident-manager.sh
-```
-
-### 3. Setup Frontend
-```bash
+# Navigate to dapp folder 
 cd dapp
+
+# Install dependencies
 npm install
-cp .env.example .env
-# Configure .env with your values
+
+# Start development server
 npm run dev
 ```
-
-## User Flow
-
-### Step 1: Connect Services
-- Connect MetaMask wallet
-- Connect Storacha storage account
-
-### Step 2: Identity Verification
-- **Returning users**: Auto-verified, skip to incident reporting
-- **New users**: Scan QR code with Self Protocol app for verification
-
-### Step 3: Report Incident
-- Fill incident details (location, description, photos)
-- Generate professional PDF report
-
-### Step 4: Decentralized Storage
-- Upload PDF to IPFS via Storacha
-- Receive permanent content identifier (CID)
-
-### Step 5: Blockchain Record
-- Submit incident hash to smart contract
-- Receive immutable transaction receipt
-
-### Step 6: Completion
-- Download PDF report
-- Access permanent IPFS links
-- View blockchain verification
-
-## Smart Contracts
-
-### ProofOfHuman.sol
-- Integrates with Self Protocol for identity verification
-- Tracks verified users: `isUserVerified(address)`
-- One-time verification per wallet address
-
-### IncidentContract.sol
-- Stores incident metadata on-chain
-- Links to IPFS-stored documents
-- Provides incident search by ID
-
-## Technology Stack
-
-- **Frontend**: React + TypeScript + Vite + Tailwind CSS
-- **Blockchain**: Celo (Sepolia testnet)
-- **Storage**: IPFS via Storacha (Web3.Storage)
-- **Identity**: Self Protocol (zero-knowledge verification)
-- **Contracts**: Solidity + Foundry
-- **PDF**: pdf-lib for document generation
-
-## Environment Variables
-
-```bash
-# Self Protocol Configuration
-VITE_SELF_APP_NAME="Incident Management System"
-VITE_SELF_SCOPE="incident-management"
-VITE_SELF_ENDPOINT=https://staging-api.self.xyz
-```
-
-## Deployed Contracts (Celo Sepolia)
-
-- **ProofOfHuman**: `0xa46fbeC38d888c37b4310a145745CF947d83a0eB`
-- **IncidentManager**: `0x839b35480ddb545e550742e094c0fc0a73fd43ce`
-
-## Key Benefits
-
-- **Privacy-Preserving**: Identity verified without revealing personal data
-- **Immutable Records**: Cannot be tampered with or lost
-- **Decentralized**: No single point of failure
-- **Professional**: Generates court-admissible documentation
-- **User-Friendly**: Seamless experience for verified users
-
-## Development
-
-```bash
-# Frontend development
-cd dapp && npm run dev
-
-# Contract development
-cd contracts && forge test
-
-# Deploy to testnet
-forge script script/Deploy.s.sol --broadcast --rpc-url $RPC_URL
-```
-
-## License
-
-MIT
