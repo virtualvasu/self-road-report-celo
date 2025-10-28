@@ -1,46 +1,42 @@
+// import { useState } from 'react';
+
 import { useState } from 'react';
+import ProjectIntroPage from './ProjectIntroPage';
 import LandingPage from './LandingPage';
 import IncidentWizard from './IncidentWizard';
 import IncidentDashboard from './IncidentDashboard';
 import RewardsTracker from './RewardsTracker';
 
-type AppMode = 'landing' | 'report' | 'dashboard' | 'rewards';
+type AppMode = 'intro' | 'landing' | 'report' | 'dashboard' | 'rewards';
 
 export default function IncidentManager() {
-  const [currentMode, setCurrentMode] = useState<AppMode>('landing');
+  const [mode, setMode] = useState<AppMode>('intro');
 
-  const handleModeChange = (mode: AppMode) => {
-    setCurrentMode(mode);
-  };
+  if (mode === 'intro') {
+    return <ProjectIntroPage onContinue={() => setMode('landing')} />;
+  }
 
-  const renderCurrentView = () => {
-    switch (currentMode) {
-      case 'landing':
-        return (
-          <LandingPage
-            onReportIncident={() => handleModeChange('report')}
-            onViewDashboard={() => handleModeChange('dashboard')}
-            onViewRewards={() => handleModeChange('rewards')}
-          />
-        );
-      case 'dashboard':
-        return (
-          <IncidentDashboard
-            onBack={() => handleModeChange('landing')}
-          />
-        );
-      case 'report':
-        return <IncidentWizard onBackToHome={() => handleModeChange('landing')} />;
-      case 'rewards':
-        return (
-          <RewardsTracker
-            onBack={() => handleModeChange('landing')}
-          />
-        );
-      default:
-        return null;
-    }
-  };
+  if (mode === 'landing') {
+    return (
+      <LandingPage
+        onReportIncident={() => setMode('report')}
+        onViewDashboard={() => setMode('dashboard')}
+        onViewRewards={() => setMode('rewards')}
+      />
+    );
+  }
 
-  return renderCurrentView();
+  if (mode === 'report') {
+    return <IncidentWizard onBackToHome={() => setMode('landing')} />;
+  }
+
+  if (mode === 'dashboard') {
+    return <IncidentDashboard onBack={() => setMode('landing')} />;
+  }
+
+  if (mode === 'rewards') {
+    return <RewardsTracker onBack={() => setMode('landing')} />;
+  }
+
+  return null;
 }

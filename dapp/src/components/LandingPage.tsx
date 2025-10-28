@@ -1,4 +1,4 @@
-import { FileText, Shield, Database, Cloud, ArrowRight, BarChart3, Award } from 'lucide-react';
+import { FileText, Shield, ArrowRight, BarChart3, Award } from 'lucide-react';
 
 interface LandingPageProps {
   onReportIncident: () => void;
@@ -17,7 +17,7 @@ export default function LandingPage({ onReportIncident, onViewDashboard, onViewR
               <Shield className="w-8 h-8 text-blue-600" />
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Incident Management System
+              Road Incident Management System
             </h1>
             <p className="text-gray-600 text-lg mb-3">
               Professional incident reporting with blockchain verification and decentralized storage
@@ -165,42 +165,6 @@ export default function LandingPage({ onReportIncident, onViewDashboard, onViewR
                 <span>View My Rewards</span>
                 <ArrowRight className="w-5 h-5" />
               </button>
-            </div>
-          </div>
-        </div>
-
-        {/* System Features */}
-        <div className="mt-16 bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-          <h3 className="text-lg font-bold text-gray-900 text-center mb-6">
-            Why Use Our Incident Management System?
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Database className="w-6 h-6 text-purple-600" />
-              </div>
-              <h4 className="font-semibold text-gray-900 mb-2">Immutable Records</h4>
-              <p className="text-sm text-gray-600">
-                All incidents are permanently recorded on the blockchain, ensuring they cannot be tampered with or lost.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Cloud className="w-6 h-6 text-green-600" />
-              </div>
-              <h4 className="font-semibold text-gray-900 mb-2">Decentralized Storage</h4>
-              <p className="text-sm text-gray-600">
-                Reports are stored on IPFS through Storacha, ensuring global accessibility and redundancy.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Shield className="w-6 h-6 text-indigo-600" />
-              </div>
-              <h4 className="font-semibold text-gray-900 mb-2">Cryptographic Proof</h4>
-              <p className="text-sm text-gray-600">
-                Every report includes cryptographic timestamps and signatures for legal admissibility.
-              </p>
             </div>
           </div>
         </div>
