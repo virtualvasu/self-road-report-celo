@@ -1,11 +1,13 @@
 import React from 'react';
-import { ArrowRight, Github, FileCode, Sparkles, Shield, Coins, CheckCircle, ExternalLink, MapPin } from 'lucide-react';
+import { ArrowRight, Github, FileCode, Sparkles, Shield, Coins, CheckCircle, ExternalLink, MapPin, MessageSquare } from 'lucide-react';
 
 interface ProjectIntroPageProps {
   onContinue: () => void;
 }
 
 export default function ProjectIntroPage({ onContinue }: ProjectIntroPageProps) {
+  const TELEGRAM_LINK = (import.meta.env.VITE_TELEGRAM_MINI_APP_LINK as string) || 'https://t.me/your_bot';
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -28,6 +30,8 @@ export default function ProjectIntroPage({ onContinue }: ProjectIntroPageProps) 
           </a>
         </div>
       </header>
+
+      
 
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-12 text-center">
@@ -85,33 +89,57 @@ export default function ProjectIntroPage({ onContinue }: ProjectIntroPageProps) 
         </div>
       </section>
 
-      {/* Self Protocol Section */}
+      {/* Aadhaar / Self Protocol Section (Aadhaar themed) */}
       <section className="container mx-auto px-4 py-8">
-        <div className="max-w-3xl mx-auto bg-blue-50 border-2 border-blue-200 rounded-lg p-6">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Shield className="w-7 h-7 text-white" />
+        <div className="max-w-3xl mx-auto bg-amber-50 border-2 border-amber-200 rounded-lg p-6">
+          <div className="flex flex-col md:flex-row items-center gap-4">
+            <div className="flex-shrink-0 w-full md:w-48">
+              {/* show provided Aadhaar image in original rectangular shape */}
+              <img src="/adhaar_zk.jpg" alt="Aadhaar ZK card" className="w-full h-auto object-contain border border-amber-200 shadow-sm" />
             </div>
             <div className="flex-1">
-              <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3">
-                Aadhaar-Verified Identity with Self Protocol
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
+                Aadhaar-verified identity
               </h2>
               <p className="text-gray-700 text-sm mb-3">
-                SafeRoads DAO integrates <strong>Self Protocol</strong> to ensure only real, unique humans can submit incident reports. Users verify their identity through Aadhaar-based zero-knowledge proofs, confirming they are genuine individuals without exposing any personal data.
-              </p>
-              <p className="text-gray-700 text-sm mb-4">
-                This privacy-preserving verification prevents bots and duplicate accounts, ensuring the platform remains secure while protecting user privacy. Only verified users can submit reports and earn rewards.
+                Verified via Self Protocol — Aadhaar-based zero-knowledge proofs. Only verified users can submit reports and claim rewards.
               </p>
               <a
                 href="https://docs.self.xyz/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-semibold text-sm transition-colors"
+                className="inline-flex items-center gap-2 text-amber-600 hover:text-amber-700 font-semibold text-sm transition-colors"
               >
-                Learn more about Self Protocol
+                Learn more
                 <ExternalLink className="w-4 h-4" />
               </a>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Telegram Mini App (placed before Smart Contracts) */}
+      <section className="container mx-auto px-4 py-8">
+        <div className="max-w-3xl mx-auto bg-sky-50 border-2 border-sky-200 rounded-lg p-6 text-center">
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <MessageSquare className="w-6 h-6 text-sky-600" />
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900">Telegram Mini App</h2>
+          </div>
+
+          <p className="text-gray-600 text-sm mb-4">
+            Report incidents directly from Telegram — open the mini app to submit quickly from your phone.
+          </p>
+
+          <div className="flex items-center justify-center">
+            <a
+              href={TELEGRAM_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-semibold transition-all"
+            >
+              Open in Telegram
+              <ExternalLink className="w-4 h-4" />
+            </a>
           </div>
         </div>
       </section>
@@ -191,6 +219,8 @@ export default function ProjectIntroPage({ onContinue }: ProjectIntroPageProps) 
           </a>
         </div>
       </section>
+
+      
 
       {/* Features */}
       <section className="container mx-auto px-4 py-8">

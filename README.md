@@ -10,6 +10,7 @@
 - [Problem](#problem)
 - [Solution](#solution)
 - [Deployment & Demo](#deployment--demo)
+ - [Telegram Mini App](#telegram-mini-app)
 - [AI-Powered Feature Development](#ai-powered-feature-development)
 - [Smart Contracts on Celo Sepolia](#smart-contracts-on-celo-sepolia)
 - [Getting Started](#getting-started)
@@ -58,6 +59,13 @@ SafeRoads DAO makes civic participation **rewarding and verifiable**.
 In SafeRoads DAO, [Self Protocol](https://docs.self.xyz/) is integrated to ensure that only real, unique humans can submit road incident reports. When a user wants to report an incident, they must verify their identity using [Self Protocol](https://docs.self.xyz/), which leverages Aadhaar-based zero-knowledge proofs. This process confirms the user is a genuine individual without exposing any personal data. Only after successful verification can the user submit a report and become eligible for rewards, making the platform both secure and privacy-preserving.
 
 
+---
+## Telegram Mini App
+
+- Report incidents directly from Telegram using the bot: https://t.me/saferoads_dao_bot
+- Note: this bot is under active improvement — core reporting works now and better features will be added in the future.
+
+---
 
 ## NoahAI-Powered Feature Development
 
